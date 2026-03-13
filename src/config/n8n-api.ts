@@ -4,7 +4,7 @@ import { logger } from '../utils/logger';
 
 // n8n API configuration schema
 const n8nApiConfigSchema = z.object({
-  N8N_API_URL: z.string().url().optional(),
+  N8N_API_URL: z.string().min(1).optional(),
   N8N_API_KEY: z.string().min(1).optional(),
   N8N_API_TIMEOUT: z.coerce.number().positive().default(30000),
   N8N_API_MAX_RETRIES: z.coerce.number().positive().default(3),
