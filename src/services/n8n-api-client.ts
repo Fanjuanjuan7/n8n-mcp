@@ -52,9 +52,9 @@ export class N8nApiClient {
     this.baseUrl = baseUrl;
 
     // Ensure baseUrl ends with /api/v1
-    const apiUrl = baseUrl.endsWith('/api/v1')
+    const apiUrl = baseUrl.endsWith('/api/v1/')
       ? baseUrl
-      : `${baseUrl.replace(/\/$/, '')}/api/v1`;
+      : `${baseUrl.replace(/\/$/, '').replace(/\/api\/v1$/, '')}/api/v1/`;
 
     this.client = axios.create({
       baseURL: apiUrl,
@@ -169,7 +169,7 @@ export class N8nApiClient {
       // If healthz endpoint doesn't exist, try listing workflows with limit 1
       // This is a fallback for older n8n versions
       try {
-        await this.client.get('/workflows', { params: { limit: 1 } });
+        await this.client.get('workflows', { params: { limit: 1 } });
 
         // Still try to get version
         const versionInfo = await this.getVersion();
@@ -189,7 +189,7 @@ export class N8nApiClient {
   async createWorkflow(workflow: Partial<Workflow>): Promise<Workflow> {
     try {
       const cleanedWorkflow = cleanWorkflowForCreate(workflow);
-      const response = await this.client.post('/workflows', cleanedWorkflow);
+      const response = await this.client.post('workflows', cleanedWorkflow);
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -227,13 +227,13 @@ export class N8nApiClient {
 
       // First, try PUT method (newer n8n versions)
       try {
-        const response = await this.client.put(`/workflows/${id}`, cleanedWorkflow);
+        const response = await this.client.put(`workflows/${id}`, cleanedWorkflow);
         return response.data;
       } catch (putError: any) {
         // If PUT fails with 405 (Method Not Allowed), try PATCH
         if (putError.response?.status === 405) {
           logger.debug('PUT method not supported, falling back to PATCH');
-          const response = await this.client.patch(`/workflows/${id}`, cleanedWorkflow);
+          const response = await this.client.patch(`workflows/${id}`, cleanedWorkflow);
           return response.data;
         }
         throw putError;
@@ -245,7 +245,7 @@ export class N8nApiClient {
 
   async deleteWorkflow(id: string): Promise<Workflow> {
     try {
-      const response = await this.client.delete(`/workflows/${id}`);
+      const response = await this.client.delete(`workflows/${id}`);
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -285,7 +285,7 @@ export class N8nApiClient {
    */
   async listWorkflows(params: WorkflowListParams = {}): Promise<WorkflowListResponse> {
     try {
-      const response = await this.client.get('/workflows', { params });
+      const response = await this.client.get('workflows', { params });
       return this.validateListResponse<Workflow>(response.data, 'workflows');
     } catch (error) {
       throw handleN8nApiError(error);
@@ -319,7 +319,7 @@ export class N8nApiClient {
    */
   async listExecutions(params: ExecutionListParams = {}): Promise<ExecutionListResponse> {
     try {
-      const response = await this.client.get('/executions', { params });
+      const response = await this.client.get('executions', { params });
       return this.validateListResponse<Execution>(response.data, 'executions');
     } catch (error) {
       throw handleN8nApiError(error);
@@ -328,7 +328,7 @@ export class N8nApiClient {
 
   async deleteExecution(id: string): Promise<void> {
     try {
-      await this.client.delete(`/executions/${id}`);
+      await this.client.delete(`executions/${id}`);
     } catch (error) {
       throw handleN8nApiError(error);
     }
@@ -402,7 +402,7 @@ export class N8nApiClient {
    */
   async listCredentials(params: CredentialListParams = {}): Promise<CredentialListResponse> {
     try {
-      const response = await this.client.get('/credentials', { params });
+      const response = await this.client.get('credentials', { params });
       return this.validateListResponse<Credential>(response.data, 'credentials');
     } catch (error) {
       throw handleN8nApiError(error);
@@ -420,7 +420,7 @@ export class N8nApiClient {
 
   async createCredential(credential: Partial<Credential>): Promise<Credential> {
     try {
-      const response = await this.client.post('/credentials', credential);
+      const response = await this.client.post('credentials', credential);
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -429,7 +429,7 @@ export class N8nApiClient {
 
   async updateCredential(id: string, credential: Partial<Credential>): Promise<Credential> {
     try {
-      const response = await this.client.patch(`/credentials/${id}`, credential);
+      const response = await this.client.patch(`credentials/${id}`, credential);
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -438,7 +438,7 @@ export class N8nApiClient {
 
   async deleteCredential(id: string): Promise<void> {
     try {
-      await this.client.delete(`/credentials/${id}`);
+      await this.client.delete(`credentials/${id}`);
     } catch (error) {
       throw handleN8nApiError(error);
     }
@@ -460,7 +460,7 @@ export class N8nApiClient {
    */
   async listTags(params: TagListParams = {}): Promise<TagListResponse> {
     try {
-      const response = await this.client.get('/tags', { params });
+      const response = await this.client.get('tags', { params });
       return this.validateListResponse<Tag>(response.data, 'tags');
     } catch (error) {
       throw handleN8nApiError(error);
@@ -469,7 +469,7 @@ export class N8nApiClient {
 
   async createTag(tag: Partial<Tag>): Promise<Tag> {
     try {
-      const response = await this.client.post('/tags', tag);
+      const response = await this.client.post('tags', tag);
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -478,7 +478,7 @@ export class N8nApiClient {
 
   async updateTag(id: string, tag: Partial<Tag>): Promise<Tag> {
     try {
-      const response = await this.client.patch(`/tags/${id}`, tag);
+      const response = await this.client.patch(`tags/${id}`, tag);
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -487,7 +487,7 @@ export class N8nApiClient {
 
   async deleteTag(id: string): Promise<void> {
     try {
-      await this.client.delete(`/tags/${id}`);
+      await this.client.delete(`tags/${id}`);
     } catch (error) {
       throw handleN8nApiError(error);
     }
@@ -496,7 +496,7 @@ export class N8nApiClient {
   // Source Control Management (Enterprise feature)
   async getSourceControlStatus(): Promise<SourceControlStatus> {
     try {
-      const response = await this.client.get('/source-control/status');
+      const response = await this.client.get('source-control/status');
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -505,7 +505,7 @@ export class N8nApiClient {
 
   async pullSourceControl(force = false): Promise<SourceControlPullResult> {
     try {
-      const response = await this.client.post('/source-control/pull', { force });
+      const response = await this.client.post('source-control/pull', { force });
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -517,7 +517,7 @@ export class N8nApiClient {
     fileNames?: string[]
   ): Promise<SourceControlPushResult> {
     try {
-      const response = await this.client.post('/source-control/push', {
+      const response = await this.client.post('source-control/push', {
         message,
         fileNames,
       });
@@ -530,7 +530,7 @@ export class N8nApiClient {
   // Variable Management (via Source Control API)
   async getVariables(): Promise<Variable[]> {
     try {
-      const response = await this.client.get('/variables');
+      const response = await this.client.get('variables');
       return response.data.data || [];
     } catch (error) {
       // Variables might not be available in all n8n versions
@@ -541,7 +541,7 @@ export class N8nApiClient {
 
   async createVariable(variable: Partial<Variable>): Promise<Variable> {
     try {
-      const response = await this.client.post('/variables', variable);
+      const response = await this.client.post('variables', variable);
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -550,7 +550,7 @@ export class N8nApiClient {
 
   async updateVariable(id: string, variable: Partial<Variable>): Promise<Variable> {
     try {
-      const response = await this.client.patch(`/variables/${id}`, variable);
+      const response = await this.client.patch(`variables/${id}`, variable);
       return response.data;
     } catch (error) {
       throw handleN8nApiError(error);
@@ -559,7 +559,7 @@ export class N8nApiClient {
 
   async deleteVariable(id: string): Promise<void> {
     try {
-      await this.client.delete(`/variables/${id}`);
+      await this.client.delete(`variables/${id}`);
     } catch (error) {
       throw handleN8nApiError(error);
     }
